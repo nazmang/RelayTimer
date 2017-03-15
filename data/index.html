@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <title>jQuery Timedropper Plugin Basic Demo</title>
+    <link href='timedropper.min.css' rel='stylesheet' type='text/css'>
+    <link rel='stylesheet' href='http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css'>
+    <link href='http://fonts.googleapis.com/css?family=Montserrat:400,700|Karla:400,400italic,700,700italic|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+    <link href='style.css' rel='stylesheet' type='text/css'>
+    <script src='http://code.jquery.com/jquery-1.12.4.min.js'></script>
+    <script src='http://code.jquery.com/ui/1.12.1/jquery-ui.min.js'></script>
+    <script src='timedropper.min.js'></script>
+</head>
+
+<body>
+<div id='wrapper'>
+    <form>
+		<div id='clock'>
+		<div id='date'></div>
+			<ul>
+				<li id="hours"></li>
+				<li id="point">:</li>
+				<li id="min"></li>
+			</ul>
+		</div>
+        <div class='accordion'>Relay 1</div>
+        <div class='panel'>
+            <div class='container'><strong class='uppercase'>Start</strong>
+                <input type='text'  class='alarm' name='start1' />
+            </div>
+            <div class='container'><strong class='uppercase'>Stop</strong>
+                <input type='text'  class='alarm' name='end1' />
+            </div>
+            <div class='container'><strong class='uppercase'>Status</strong>
+                <label class='switch' for='sw1'>
+                    <input type='checkbox' id='sw1' name='st1' />
+                    <div class='slider round'></div>
+                </label>
+            </div>
+        </div>
+        <div class='accordion'>Relay 2</div>
+        <div class='panel'>
+            <div class='container'><strong class='uppercase'>Start</strong>
+                <input type='text'  class='alarm' name='start2' />
+            </div>
+            <div class='container'><strong class='uppercase'>Stop</strong>
+                <input type='text'  class='alarm' name='end2' />
+            </div>
+            <div class='container'><strong class='uppercase'>Status</strong>
+                <label class='switch' for='sw2'>
+                    <input type='checkbox' id='sw2' name='st2' />
+                    <div class='slider round'></div>
+                </label>
+            </div>
+        </div>
+    </form>
+</div>
+    <script>
+				
+		function updateClock (clock)
+		{
+			var timezone = 2;
+			var currentTime = new Date (clock - 2 * 3600 * 1000);
+			var monthNames = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ]; 
+			var dayNames= ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+			var currentHours = currentTime.getHours ( );
+			var currentMinutes = currentTime.getMinutes ( );
+			var currentSeconds = currentTime.getSeconds ( );
+
+			// Pad the minutes and seconds with leading zeros, if required
+			currentMinutes = ( currentMinutes < 10 ? "0" : "" ) + currentMinutes;
+			currentSeconds = ( currentSeconds < 10 ? "0" : "" ) + currentSeconds;
+  	  	
+			$("#hours").html(currentHours);
+			$("#min").html(currentMinutes);
+			$('#date').html(dayNames[currentTime.getDay()] + " " + currentTime.getDate() + ' ' + monthNames[currentTime.getMonth()] + ' ' + currentTime.getFullYear());
+		}
+		
+		function sendValues(values) {
+			console.log(values);
+			$.ajax({
+				//url: 'http://192.168.2.16/all',             // указываем URL и
+				url: '/all',
+				data: values,
+				dataType : 'json',                     // тип загружаемых данных
+				success: function (data, textStatus) { // вешаем свой обработчик на функцию success
+					//$.each(data, function() {    // обрабатываем полученные данные
+						/* ... */
+						//console.log(data);
+						$('input[name=start1]').val(data.relay1.start1);
+						$('input[name=end1]').val(data.relay1.end1);
+						(data.relay1.st1 == '1') ? $('input[name=st1]').prop('checked', true) : $('input[name=st1]').prop('checked', false);
+						$('input[name=start2]').val(data.relay2.start2);
+						$('input[name=end2]').val(data.relay2.end2);
+						(data.relay2.st2 == '1') ? $('input[name=st2]').prop('checked', true) : $('input[name=st2]').prop('checked', false);	
+						updateClock(data.time * 1000);				
+					//});
+				} 
+			});		
+		}
+		
+		$(document).ready(function(){              
+			sendValues();	
+			setInterval('sendValues()', 5000);
+			
+        }) 
+
+		$('.alarm').timeDropper({
+            format: 'HH:mm',
+            setCurrentTime: false
+		});
+        $('.accordion').click(function() {
+            $(this).toggleClass('active');
+            $(this).next().toggleClass('show');
+        });
+        $('.switch > input').on('click', function() {
+			if($(this).prop('checked') == true) {$(this).val('on');}
+			else {$(this).val('off');}
+			sendValues($('form').serialize());
+        });
+		$('.td-clock').on('mouseup',function(){
+			sendValues($('form').serialize());
+		});
+		
+    </script>
+</body>
+
+</html>
