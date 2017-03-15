@@ -18,20 +18,21 @@ typedef enum  { RELAY_DISABLED =-1, RELAY_OFF, RELAY_ON } RelayState;
 typedef struct {
 	time_t start1;
 	time_t end1;
-	time_t start2;
-	time_t end2;
+	//time_t start2;
+	//time_t end2;
 	RelayState state;
 	char name[20];
 } __attribute__((packed)) RelayConfig;
 
-class RelayTimer {
+
+
+class RelayTimer : public Timer {
 public:
 
 	RelayTimer(uint8_t pin);
 	RelayTimer(uint8_t pin, int addr);
 	//RelayTimer& operator=(RelayTimer&  rhs);
-	void on();
-	void off();
+	
 	void on(void(*)());
 	void off(void(*)());
 	bool enabled();
@@ -41,25 +42,31 @@ public:
 	void begin();
 	void rename(const char* new_name);
 	void rename(const String s);
-	bool set_state(RelayState rs); // Will be protected!
+	
 	//const char* name();
 	const String name();
 	void process();
 
-	Timer t1;
-	Timer t2;
+	//Timer t1;
+	//Timer t2;
 
 protected:
+	bool set_state(RelayState rs); // Will be protected!
 	String _name;
 	RelayState _current;
 	RelayState _previous;
 	uint8_t pin_num;
 	//
-	
+	void _on();
+	void _off();
 	uint16_t read_data();
-	void save_data();
+	//void save_data();
 	size_t _addr;	
-	
+
+private:
+	RelayConfig _rc;
+	void readConfig();
+	void writeConfig()
 };
 
 
@@ -67,6 +74,9 @@ void writeConfig(RelayTimer &rt, int addr); // Will be moved to class body
 void readConfig(RelayTimer &rt, int addr); // Will be moved to class body
 time_t convertTime(char const *str);
 String convertTime(const time_t t);
+
+void(*on_callback)();
+void(*off_callback)();
 
 #ifdef DEBUG_ENABLED
 void DebugPrint(const char *fmt, ...);

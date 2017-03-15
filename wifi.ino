@@ -254,14 +254,14 @@ void handleArgs(){
 		else { r3.off(); }
 		if (server.hasArg("st4")){ r4.on(); }
 		else { r4.off(); }
-		if (server.hasArg("start1")){ r1.t1.start(convertTime(server.arg("start1").c_str())); }
-		if (server.hasArg("start2")){ r2.t1.start(convertTime(server.arg("start2").c_str())); }
-		if (server.hasArg("start3")){ r3.t1.start(convertTime(server.arg("start3").c_str())); }
-		if (server.hasArg("start4")){ r4.t1.start(convertTime(server.arg("start4").c_str())); }
-		if (server.hasArg("end1")){	r1.t1.end(convertTime(server.arg("end1").c_str())); }
-		if (server.hasArg("end2")){ r2.t1.end(convertTime(server.arg("end2").c_str())); }
-		if (server.hasArg("end3")){ r2.t1.end(convertTime(server.arg("end3").c_str())); }
-		if (server.hasArg("end4")){ r2.t1.end(convertTime(server.arg("end4").c_str())); }
+		if (server.hasArg("start1")){ r1.set_start(convertTime(server.arg("start1").c_str())); }
+		if (server.hasArg("start2")){ r2.set_start(convertTime(server.arg("start2").c_str())); }
+		if (server.hasArg("start3")){ r3.set_start(convertTime(server.arg("start3").c_str())); }
+		if (server.hasArg("start4")){ r4.set_start(convertTime(server.arg("start4").c_str())); }
+		if (server.hasArg("end1")){	r1.set_end(convertTime(server.arg("end1").c_str())); }
+		if (server.hasArg("end2")){ r2.set_end(convertTime(server.arg("end2").c_str())); }
+		if (server.hasArg("end3")){ r2.set_end(convertTime(server.arg("end3").c_str())); }
+		if (server.hasArg("end4")){ r2.set_end(convertTime(server.arg("end4").c_str())); }
 
 
 		writeConfig(r1, RELAY1_ADDRESS);

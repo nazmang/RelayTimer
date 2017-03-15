@@ -3,7 +3,7 @@
 #include <TimeLib.h>
 
 
-class TimerElements : private TimeElements{
+/*class TimerElements : private TimeElements{
 	bool operator==(const TimerElements& rhs) const;
 	bool operator>(const TimerElements& rhs) const;
 	bool operator<(const TimerElements& rhs) const;
@@ -13,7 +13,7 @@ class TimerElements : private TimeElements{
 	bool operator<(const time_t& rhs) const;
 	bool operator==(const time_t& rhs) const;
 	bool operator!=(const time_t& rhs) const;
-};
+};*/
 
 
 class Timer {
@@ -37,10 +37,10 @@ public:
 	bool set(uint8_t h1, uint8_t m1, uint8_t s1, uint8_t h2, uint8_t m2, uint8_t s2);
 	bool set(time_t start, time_t end);
 	Timer& operator+=(uint32_t _long);
-	bool operator>=(const time_t& rhs) const;
-	bool operator<=(const time_t& rhs) const;
-	bool operator>(const time_t& rhs) const;
-	bool operator<(const time_t& rhs) const;
+	//bool operator>=(const time_t& rhs) const;
+	//bool operator<=(const time_t& rhs) const;
+	//bool operator>(const time_t& rhs) const;
+	//bool operator<(const time_t& rhs) const;
 	//bool operator==(const Timer& rhs) const;
 	//bool operator>(const Timer& rhs) const;
 	//bool operator<(const Timer& rhs) const;

@@ -1,20 +1,24 @@
 #include "Timer.h"
 
-bool Timer::operator>(const time_t& rhs) const{
+/*bool Timer::operator>=(const time_t& rhs) const{
 	TimeElements tm_min, tm_max;
 	breakTime(rhs, tm_min);
-	breakTime(this->_start, tm_max);
-	return(tm_max.Hour > tm_min.Hour || tm_max.Minute > tm_min.Minute || tm_max.Second > tm_min.Second);	
+	breakTime(this->_end, tm_max);
+
+	return(tm_max.Hour > tm_min.Hour || tm_max.Minute > tm_min.Minute);	
 }
 
-bool Timer::operator<(const time_t& rhs) const{
+bool Timer::operator<=(const time_t& rhs) const{
 	TimeElements tm_min, tm_max;
 	breakTime(rhs, tm_max);
-	breakTime(this->_end, tm_min);
-	return(tm_max.Hour > tm_min.Hour || tm_max.Minute > tm_min.Minute || tm_max.Second > tm_min.Second);
-}
+	breakTime(this->_start, tm_min);
+	if (tm_max.Hour >= tm_min.Hour){
+		if (tm_max.Minute >= tm_min.Minute) return true;
+	}
+	return false;
+}*/
 
-bool Timer::operator>=(const time_t& rhs) const{
+/*bool Timer::operator>=(const time_t& rhs) const{
 	TimeElements tm_min, tm_max;
 	breakTime(rhs, tm_min);
 	breakTime(this->_start, tm_max);
@@ -25,14 +29,15 @@ bool Timer::operator<=(const time_t& rhs) const{
 	TimeElements tm_min, tm_max;
 	breakTime(rhs, tm_max);
 	breakTime(this->_end, tm_min);
-	return(tm_max.Hour >= tm_min.Hour || tm_max.Minute >= tm_min.Minute || tm_max.Second >= tm_min.Second);
-}
+	return(tm_max.Hour >= tm_min.Hour && tm_max.Minute >= tm_min.Minute);
+}*/
 
-Timer& Timer::operator+=(uint32_t _long)
-{
-	_end = _start + _long;
-	return *this;
-}
+//Timer& Timer::operator+=(uint32_t _long)
+//{
+//	_end = _start + _long;
+//	return *this;
+//}
+
 /*bool Timer::operator==(const time_t& rhs) const{
 	TimeElements tm_min, tm_max;
 	breakTime(rhs, tm_min);
@@ -73,12 +78,13 @@ void Timer::set_end(time_t en)
 
 bool Timer::set(uint8_t _hour, uint8_t _min, uint8_t _sec, uint32_t _long)
 {
-	TimerElements tm;
+	TimeElements tm;
 	tm.Hour = _hour;
 	tm.Minute = _min;
 	tm.Second = _sec;
-	
-	if (tm != _start && (_start + _long) != _end) {
+	time_t _temp = makeTime(tm);
+
+	if (_temp != _start && (_start + _long) != _end) {
 
 		if (_start > _end) {
 			_changed = false;
@@ -97,14 +103,17 @@ bool Timer::set(uint8_t _hour, uint8_t _min, uint8_t _sec, uint32_t _long)
 
 bool Timer::set(uint8_t h1, uint8_t m1, uint8_t s1, uint8_t h2, uint8_t m2, uint8_t s2)
 {
-	TimerElements tm1, tm2;
+	TimeElements tm1, tm2;
 	tm1.Hour = h1;
 	tm1.Minute = m1;
 	tm1.Second = s1;
 	tm2.Hour = h2;
 	tm2.Minute = m2;
 	tm2.Second = s2;
-	if (tm1 != _start || tm2 != _end)
+	time_t _temp1 = makeTime(tm1);
+	time_t _temp2 = makeTime(tm2);
+
+	if (_temp1 != _start || _temp2 != _end)
 	{
 		if (_start > _end) {
 			_changed = false;

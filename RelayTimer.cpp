@@ -95,34 +95,34 @@ void writeConfigBlock(void* buf, void* adr, size_t length)
 }
 #endif
 
-void writeConfig(RelayTimer &rt, int addr){
+void RelayTimer::writeConfig(){
 	RelayConfig rc = {0};
 	//if (rt.t1.is_set()){
-		rc.start1 = rt.t1.start();
-		rc.end1 = rt.t1.end();
+	rc.start1 = get_start();
+		rc.end1 = get_end();
 	/*}
 	if (rt.t1.is_set()){*/
-		rc.start2 = rt.t2.start();
-		rc.end2 = rt.t2.end();
+		/*rc.start2 = rt.t2.start();
+		rc.end2 = rt.t2.end();*/
 	//}
-		rc.state = rt.state();
+		rc.state = state();
 		memset(rc.name, 0, sizeof(rc.name));
-		strncpy_P(rc.name, rt.name().c_str(), sizeof(rc.name) - 1);
+		strncpy_P(rc.name, name().c_str(), sizeof(rc.name) - 1);
 		//rc.name = rt.name();
-	writeConfigBlock((void*)&rc, (void*)addr, sizeof(RelayConfig));
+	writeConfigBlock((void*)&rc, (void*)_addr, sizeof(RelayConfig));
 	DBG_OUTPUT_PORT.printf("Write config to EEPROM for relay %s with state: %d\n", rc.name, rc.state);
 }
 
-void readConfig(RelayTimer &rt, int addr){
+void RelayTimer::readConfig(){
 	RelayConfig rc;
-	readConfigBlock((void *)&rc, (void*)(addr), sizeof(rc));
+	readConfigBlock((void *)&rc, (void*)(_addr), sizeof(rc));
 	
-	rt.t1.set(rc.start1, rc.end1);
-	rt.t2.set(rc.start2, rc.end2);
-	rt.set_state(rc.state);
-	rt.rename(rc.name);
+	set(rc.start1, rc.end1);
+	//rt.t2.set(rc.start2, rc.end2);
+	set_state(rc.state);
+	rename(rc.name);
 
-	DBG_OUTPUT_PORT.printf("Config was read from EEPROM for relay %s with state: %d\n", rt.name().c_str(), rt.state());
+	DBG_OUTPUT_PORT.printf("Config was read from EEPROM for relay %s with state: %d\n", name().c_str(), state());
 
 }
 
@@ -179,10 +179,10 @@ RelayTimer::RelayTimer(uint8_t pin, int addr)
 #endif
 }
 
-void RelayTimer::on(){
+void RelayTimer::_on(){
 	if (enabled()) {
 		//digitalWrite(this->pin_num, LOW);
-		if (set_state(RELAY_ON)) writeConfig(*this, this->_addr);
+		if (set_state(RELAY_ON)) writeConfig();
 #ifdef DEBUG_ENABLED
 		DBG_OUTPUT_PORT.printf("\nGot: %d - try to set ON for relay %s \n", this->state(), this->name().c_str());
 #endif
@@ -190,25 +190,25 @@ void RelayTimer::on(){
 	}	
 }
 
-void RelayTimer::on(void(*fn)()){
+void RelayTimer::on(void(*fn)() = on_callback){
 	if (enabled()) {
-		on();
+		_on();
 		fn();
 	}
 }
 
-void RelayTimer::off(void(*fn)()){
+void RelayTimer::off(void(*fn)() = off_callback){
 	if (enabled()) {
-		off();
+		_off();
 		fn();
 	}
 }
 
-void RelayTimer::off(){
+void RelayTimer::_off(){
 
 	if (enabled()){
 		//digitalWrite(this->pin_num, HIGH);
-		if (set_state(RELAY_OFF))writeConfig(*this, _addr);
+		if (set_state(RELAY_OFF))writeConfig();
 #ifdef DEBUG_ENABLED
 		DBG_OUTPUT_PORT.printf("\nGot: %d - try to set OFF state for relay %s \n", this->state(), this->name().c_str());
 #endif
@@ -227,7 +227,7 @@ RelayState RelayTimer::state(){
 }
 
 void RelayTimer::enable(){
-	if (set_state(RELAY_OFF)) writeConfig(*this, _addr);
+	if (set_state(RELAY_OFF)) writeConfig();
 #ifdef DEBUG_ENABLED
 	DBG_OUTPUT_PORT.printf("\nGot: %d - try to ENABLE relay %s \n", this->state(), this->name().c_str());
 #endif
@@ -236,7 +236,7 @@ void RelayTimer::enable(){
 }
 
 void RelayTimer::disable(){
-	if (set_state(RELAY_DISABLED)) writeConfig(*this, _addr);
+	if (set_state(RELAY_DISABLED)) writeConfig();
 #ifdef DEBUG_ENABLED
 	DBG_OUTPUT_PORT.printf("\nGot: %d - try to DISABLE relay %s \n", this->state(), this->name().c_str());
 #endif
@@ -260,7 +260,7 @@ void RelayTimer::begin()
 	DBG_OUTPUT_PORT.printf("Begin reading data...\n");
 #endif
 
-	readConfig(*this, _addr);
+	readConfig();
 	
 }
 
@@ -302,8 +302,8 @@ void RelayTimer::process()
 		DBG_OUTPUT_PORT.printf("Current state in process: %d for relay %s \n", this->state(), this->name().c_str());
 
 		if (this->state() != RELAY_ON){
-			if (t1 >= now() && t1 <= now()) { on(); }
-			if (t2 >= now() && t2 <= now()) { on(); }
+			if (_start <= now() && _end >= now()) { }
+
 		}
 		//else off();
 	}
