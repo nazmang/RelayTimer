@@ -4,7 +4,8 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 #include <FS.h>
-
+#include <ArduinoJson.h>
+#include <DHT.h>
 #include "RelayTimer.h"
 #include "settings.h"
 
@@ -32,6 +33,10 @@ ESP8266WebServer server(80);
 File fsUploadFile;
 
 RelayTimer r1(RELAY1_PIN, RELAY1_ADDRESS), r2(RELAY2_PIN, RELAY2_ADDRESS), r3(RELAY3_PIN, RELAY3_ADDRESS), r4(RELAY4_PIN, RELAY4_ADDRESS);
+
+DHT dht(DHTPIN, DHTTYPE,11);
+
+float humidity, temp_f;
 
 
 
@@ -97,7 +102,7 @@ time_t getNtpTime(){
 			secsSince1900 |= (unsigned long)packetBuffer[41] << 16;
 			secsSince1900 |= (unsigned long)packetBuffer[42] << 8;
 			secsSince1900 |= (unsigned long)packetBuffer[43];
-			return secsSince1900 - 2208988800UL + TIME_ZONE * SECS_PER_HOUR;
+			return secsSince1900 - 2208988800UL;
 		}
 	}
 	Serial.println("No NTP Response :-(");
@@ -106,7 +111,32 @@ time_t getNtpTime(){
 
 #endif
 
+void gettemperature()
+{
+	int runs = 0;
+	do {
+		delay(500);
+		temp_f = dht.readTemperature(false);
+		humidity = dht.readHumidity();
 
+		if (runs > 0)
+			DBG_OUTPUT_PORT.println("\nFailed to read from DHT sensor! \n");
+		/*DBG_OUTPUT_PORT.println(temp_f,1);
+		DBG_OUTPUT_PORT.println(humidity,1);*/
+		runs++;
+	} while (isnan(temp_f) && isnan(humidity));
+}
+
+on_callback fn_on(){
+	DBG_OUTPUT_PORT.println("Callback for ON!");
+
+};
+
+off_callback fn_off(){
+	
+	DBG_OUTPUT_PORT.println("Callback for OFF!");
+
+};
 
 //format bytes
 String formatBytes(size_t bytes){
@@ -258,18 +288,67 @@ void handleArgs(){
 		if (server.hasArg("start2")){ r2.set_start(convertTime(server.arg("start2").c_str())); }
 		if (server.hasArg("start3")){ r3.set_start(convertTime(server.arg("start3").c_str())); }
 		if (server.hasArg("start4")){ r4.set_start(convertTime(server.arg("start4").c_str())); }
-		if (server.hasArg("end1")){	r1.set_end(convertTime(server.arg("end1").c_str())); }
+		if (server.hasArg("end1")){ r1.set_end(convertTime(server.arg("end1").c_str())); }
 		if (server.hasArg("end2")){ r2.set_end(convertTime(server.arg("end2").c_str())); }
 		if (server.hasArg("end3")){ r2.set_end(convertTime(server.arg("end3").c_str())); }
 		if (server.hasArg("end4")){ r2.set_end(convertTime(server.arg("end4").c_str())); }
 
-
-		writeConfig(r1, RELAY1_ADDRESS);
-		writeConfig(r2, RELAY2_ADDRESS);
-		writeConfig(r3, RELAY3_ADDRESS);
-		writeConfig(r4, RELAY4_ADDRESS);
+		
+		//writeConfig(r1, RELAY1_ADDRESS);
+		//writeConfig(r2, RELAY2_ADDRESS);
+		//writeConfig(r3, RELAY3_ADDRESS);
+		//writeConfig(r4, RELAY4_ADDRESS);
 	}
+
+}
+
+
+String JSONGenerate(){
+
+	DynamicJsonBuffer jsonBuffer;
+	JsonObject& root = jsonBuffer.createObject();
+	gettemperature();
+
+	root["heap"] = String(ESP.getFreeHeap());
+	root["analog"] = String(analogRead(A0));
+
+	JsonObject& gpio = root.createNestedObject("gpio");
+	for (int pin = 0; pin <= 15; pin++){
+		gpio["gpio" + String(pin)] = digitalRead(pin);
+	}
+
+	JsonObject& relay1 = root.createNestedObject("relay1");
+	relay1["st1"] = String(r1.state());
+	relay1["start1"] = convertTime(r1.get_start());
+	relay1["end1"] = convertTime(r1.get_end());
+	relay1["name1"] = r1.name();
+
+	JsonObject& relay2 = root.createNestedObject("relay2");
+	relay2["st2"] = String(r2.state());
+	relay2["start2"] = convertTime(r2.get_start());
+	relay2["end2"] = convertTime(r2.get_end());
+	relay2["name2"] = r2.name();
+
+	JsonObject& relay3 = root.createNestedObject("relay3");
+	relay3["st3"] = String(r3.state());
+	relay3["start3"] = convertTime(r3.get_start());
+	relay3["end3"] = convertTime(r3.get_end());
+	relay3["name3"] = r3.name();
+
+	JsonObject& relay4 = root.createNestedObject("relay4");
+	relay4["st4"] = String(r4.state());
+	relay4["start4"] = convertTime(r4.get_start());
+	relay4["end4"] = convertTime(r4.get_end());
+	relay4["name4"] = r4.name();
+
+	root["time"] = String(now());
+	/*root["frequency"] = ESP.getCpuFreqMHz();*/
+	/*root["temperature"] = dht.readTemperature(false);
+	root["humidity"] = dht.readHumidity();*/
+	String json = String();
 	
+	root.printTo(json);
+	return json;
 }
 
 
@@ -290,9 +369,9 @@ void setup(void){
 			DBG_OUTPUT_PORT.printf("FS File: %s, size: %s\n", fileName.c_str(), formatBytes(fileSize).c_str());
 #endif
 		}
-		
+
 	}
-	
+
 	//Wi-Fi init
 	if (String(WiFi.SSID()) != String(ssid)) {
 		WiFi.begin(ssid, password);
@@ -309,7 +388,7 @@ void setup(void){
 	DBG_OUTPUT_PORT.println(WiFi.localIP());
 #endif
 	/*MDNS.begin(host);
-	DBG_OUTPUT_PORT.print("Open http://"); 
+	DBG_OUTPUT_PORT.print("Open http://");
 	DBG_OUTPUT_PORT.print(host);
 	DBG_OUTPUT_PORT.println(".local/edit to see the file browser");*/
 
@@ -323,9 +402,10 @@ void setup(void){
 	// Check time sync
 	if (timeStatus() == timeNotSet) {
 #ifdef DEBUG_ENABLED
-		DBG_OUTPUT_PORT.println("Time is not set!"); now(); }
-		DBG_OUTPUT_PORT.print("Current timestamp: ");
-		DBG_OUTPUT_PORT.println(now());
+		DBG_OUTPUT_PORT.println("Time is not set!"); now();
+	}
+	DBG_OUTPUT_PORT.print("Current timestamp: ");
+	DBG_OUTPUT_PORT.println(now());
 #endif
 	// Init relays
 	r1.begin();
@@ -338,13 +418,13 @@ void setup(void){
 	r3.rename("Relay 3");
 	r4.rename("Relay 4");
 
-	
+
 	//SERVER INIT	//list directory
 	server.on("/list", HTTP_GET, handleFileList);
 	/*
 	//load editor
 	server.on("/edit", HTTP_GET, [](){
-		if (!handleFileRead("/edit.htm")) server.send(404, "text/plain", "FileNotFound");
+	if (!handleFileRead("/edit.htm")) server.send(404, "text/plain", "FileNotFound");
 	});
 	//create file
 	server.on("/edit", HTTP_PUT, handleFileCreate);
@@ -365,48 +445,26 @@ void setup(void){
 
 	//get heap status, analog input value and all GPIO statuses in one json call
 	server.on("/all", HTTP_GET, [](){
-	
-		handleArgs();		
-		
-		String json = "{";
-		json += "\"heap\":" + String(ESP.getFreeHeap());
-		json += ", \"analog\":" + String(analogRead(A0));
-		//json += ", \"gpio\":" + String((uint32_t)(((GPI | GPO) & 0xFFFF) | ((GP16I & 0x01) << 16)));
-		json += ", \"gpio\":{";
-		for (int pin = 0; pin < 15; pin++){
-			json += "\"gpio" + String(pin) + "\":" + String(digitalRead(pin)) + ",";
-		}
-		json += "\"gpio15\":" + String(digitalRead(15)) + "}";
 
-		json += ",\"relay1\":{\"st1\":" + String(r1.state());
-		json += ", \"start1\":\"" + convertTime(r1.t1.start()) + "\"";
-		json += ", \"end1\":\"" + convertTime(r1.t1.end()) + "\"}";
+		handleArgs();
 
-		json += ",\"relay2\":{\"st2\":" + String(r2.state());
-		json += ", \"start2\":\"" + convertTime(r2.t1.start()) + "\"";
-		json += ", \"end2\":\"" + convertTime(r2.t1.end()) + "\"}";
 
-		json += ",\"relay3\":{\"st3\":" + String(r3.state());
-		json += ", \"start3\":\"" + convertTime(r3.t1.start()) + "\"";
-		json += ", \"end3\":\"" + convertTime(r3.t1.end()) + "\"}";
+		server.send(200, "text/json", JSONGenerate());
 
-		json += ",\"relay4\":{\"st4\":" + String(r4.state());
-		json += ", \"start4\":\"" + convertTime(r4.t1.start()) + "\"";
-		json += ", \"end4\":\"" + convertTime(r4.t1.end()) + "\"}";
-		json += ", \"time\":" + String(now());
-		json += "}";
-		//json += "}";
-		server.send(200, "text/json", json);
-		json = String();
-	}); 
+	});
 	server.begin();
-	DBG_OUTPUT_PORT.println("HTTP server started");	
+	DBG_OUTPUT_PORT.println("HTTP server started");
 }
 
 void loop(void){
-	server.handleClient();
+	
 	r1.process();
+	
 	r2.process();
+	
+	server.handleClient();
+	
+	
 	/*r3.process();
 	r4.process();*/
 }

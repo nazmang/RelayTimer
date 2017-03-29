@@ -8,8 +8,9 @@
     <title>jQuery Timedropper Plugin Basic Demo</title>
     <link href='timedropper.min.css' rel='stylesheet' type='text/css'>
     <link rel='stylesheet' href='http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css'>
-    <link href='http://fonts.googleapis.com/css?family=Montserrat:400,700|Karla:400,400italic,700,700italic|Inconsolata:400,700' rel='stylesheet' type='text/css'>
-    <link href='style.css' rel='stylesheet' type='text/css'>
+    <!-- <link href='http://fonts.googleapis.com/css?family=Montserrat:400,700|Karla:400,400italic,700,700italic|Inconsolata:400,700' rel='stylesheet' type='text/css'> -->
+    <link href='http://fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
+	<link href='style.css' rel='stylesheet' type='text/css'>
     <script src='http://code.jquery.com/jquery-1.12.4.min.js'></script>
     <script src='http://code.jquery.com/ui/1.12.1/jquery-ui.min.js'></script>
     <script src='timedropper.min.js'></script>
@@ -18,15 +19,22 @@
 <body>
 <div id='wrapper'>
     <form>
+	<div id='header'>
+		<div id='temper'>24<span>&deg;C</span></div>
+		<div id='temper'></div>
+		<div id='temper'></div>
 		<div id='clock'>
 		<div id='date'></div>
+		<div id='time'>
 			<ul>
 				<li id="hours"></li>
 				<li id="point">:</li>
 				<li id="min"></li>
 			</ul>
 		</div>
-        <div class='accordion'>Relay 1</div>
+		</div>
+	</div>
+        <div class='accordion'><div id='st1' class='status'></div><input type='text'  class='name' name='name1' value=''/></div>
         <div class='panel'>
             <div class='container'><strong class='uppercase'>Start</strong>
                 <input type='text'  class='alarm' name='start1' />
@@ -41,7 +49,7 @@
                 </label>
             </div>
         </div>
-        <div class='accordion'>Relay 2</div>
+        <div class='accordion'><div id='st2' class='status'></div><input type='text'  class='name' name='name2' value=''/></div>
         <div class='panel'>
             <div class='container'><strong class='uppercase'>Start</strong>
                 <input type='text'  class='alarm' name='start2' />
@@ -59,11 +67,11 @@
     </form>
 </div>
     <script>
-				
+		var sendTimout = 1000;		
 		function updateClock (clock)
 		{
-			var timezone = 2;
-			var currentTime = new Date (clock - 2 * 3600 * 1000);
+			var timezone = 0;
+			var currentTime = new Date (clock - timezone * 3600 * 1000);
 			var monthNames = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ]; 
 			var dayNames= ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
 			var currentHours = currentTime.getHours ( );
@@ -82,8 +90,8 @@
 		function sendValues(values) {
 			console.log(values);
 			$.ajax({
-				//url: 'http://192.168.2.16/all',             // указываем URL и
-				url: '/all',
+				url: 'http://192.168.2.11/all',             // указываем URL и
+				//url: '/all',
 				data: values,
 				dataType : 'json',                     // тип загружаемых данных
 				success: function (data, textStatus) { // вешаем свой обработчик на функцию success
@@ -92,10 +100,24 @@
 						//console.log(data);
 						$('input[name=start1]').val(data.relay1.start1);
 						$('input[name=end1]').val(data.relay1.end1);
-						(data.relay1.st1 == '1') ? $('input[name=st1]').prop('checked', true) : $('input[name=st1]').prop('checked', false);
+						$('input[name=name1]').val(data.relay1.name1);
+						if(data.relay1.st1 == '1') {
+							$('input[name=st1]').prop('checked', true);
+							$('#st1').removeClass('off').addClass('on');
+						} else { 
+							$('input[name=st1]').prop('checked', false);
+							$('#st1').removeClass('on').addClass('off');
+						}
 						$('input[name=start2]').val(data.relay2.start2);
 						$('input[name=end2]').val(data.relay2.end2);
-						(data.relay2.st2 == '1') ? $('input[name=st2]').prop('checked', true) : $('input[name=st2]').prop('checked', false);	
+						$('input[name=name2]').val(data.relay2.name2);
+						if(data.relay2.st2 == '1') {
+							$('input[name=st2]').prop('checked', true);
+							$('#st2').removeClass('off').addClass('on');
+						} else {
+							$('input[name=st2]').prop('checked', false);
+							$('#st2').removeClass('on').addClass('off');
+						}	
 						updateClock(data.time * 1000);				
 					//});
 				} 
@@ -119,10 +141,10 @@
         $('.switch > input').on('click', function() {
 			if($(this).prop('checked') == true) {$(this).val('on');}
 			else {$(this).val('off');}
-			sendValues($('form').serialize());
+			setTimeout(sendValues($('form').serialize(),sendTimout);
         });
 		$('.td-clock').on('mouseup',function(){
-			sendValues($('form').serialize());
+			setTimeout(sendValues($('form').serialize(),sendTimout);
 		});
 		
     </script>

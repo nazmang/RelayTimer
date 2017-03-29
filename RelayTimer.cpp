@@ -10,8 +10,8 @@ void DebugPrint(const char *fmt, ...){
 	breakTime(now(), tm);
 	va_list args;
 	va_start(args, fmt);
-	
-	j = snprintf(fmtBuffer, 10, PSTR("%d:%d:%d "), tm.Hour,tm.Minute,tm.Second);
+
+	j = snprintf(fmtBuffer, 10, PSTR("%d:%d:%d "), tm.Hour, tm.Minute, tm.Second);
 	vsnprintf(fmtBuffer + j, 288, fmt, args);
 	va_end(args);
 	DBG_OUTPUT_PORT.print(fmtBuffer);
@@ -95,20 +95,23 @@ void writeConfigBlock(void* buf, void* adr, size_t length)
 }
 #endif
 
+static uint32_t prevMillis = 0;
+
+
 void RelayTimer::writeConfig(){
-	RelayConfig rc = {0};
+	RelayConfig rc = { 0 };
 	//if (rt.t1.is_set()){
 	rc.start1 = get_start();
-		rc.end1 = get_end();
+	rc.end1 = get_end();
 	/*}
 	if (rt.t1.is_set()){*/
-		/*rc.start2 = rt.t2.start();
-		rc.end2 = rt.t2.end();*/
+	/*rc.start2 = rt.t2.start();
+	rc.end2 = rt.t2.end();*/
 	//}
-		rc.state = state();
-		memset(rc.name, 0, sizeof(rc.name));
-		strncpy_P(rc.name, name().c_str(), sizeof(rc.name) - 1);
-		//rc.name = rt.name();
+	rc.state = state();
+	memset(rc.name, 0, sizeof(rc.name));
+	strncpy_P(rc.name, name().c_str(), sizeof(rc.name) - 1);
+	//rc.name = rt.name();
 	writeConfigBlock((void*)&rc, (void*)_addr, sizeof(RelayConfig));
 	DBG_OUTPUT_PORT.printf("Write config to EEPROM for relay %s with state: %d\n", rc.name, rc.state);
 }
@@ -116,8 +119,9 @@ void RelayTimer::writeConfig(){
 void RelayTimer::readConfig(){
 	RelayConfig rc;
 	readConfigBlock((void *)&rc, (void*)(_addr), sizeof(rc));
-	
-	set(rc.start1, rc.end1);
+
+	set_start(rc.start1);
+	set_end(rc.end1);
 	//rt.t2.set(rc.start2, rc.end2);
 	set_state(rc.state);
 	rename(rc.name);
@@ -126,45 +130,17 @@ void RelayTimer::readConfig(){
 
 }
 
-time_t convertTime(char const *str){
-	TimeElements tm;
-	String s(str);
-	time_t t;
-	t = now();
-	breakTime(t, tm);
-	tm.Hour = s.substring(0, 2).toInt();
-	tm.Minute = s.substring(3, 5).toInt();
-	tm.Second = 0;
-	t = makeTime(tm);
-
-	return makeTime(tm);
-}
-
-String convertTime(const time_t t){
-	TimeElements tm;
-	breakTime(t, tm);
-	String s = "";
-	if (tm.Hour < 10) s = "0" + String(tm.Hour);
-	else s = String(tm.Hour);
-
-	s += ":";
-
-	if (tm.Minute < 10) s += "0" + String(tm.Minute);
-	else s += String(tm.Minute);
-
-	return s;
-}
 
 RelayTimer::RelayTimer(uint8_t pin)
 {
 	pin_num = pin;
 	_current = RELAY_OFF;
 	_previous = RELAY_OFF;
-	_name = ""; 
+	_name = "";
 	_addr = -1;
-#ifdef DEBUG_ENABLED
-	DBG_OUTPUT_PORT.printf("\nNew relay init on pin: %d", this->pin_num);
-#endif
+	//#ifdef DEBUG_ENABLED
+	//	DBG_OUTPUT_PORT.printf("\nNew relay init on pin: %d", this->pin_num);
+	//#endif
 }
 
 RelayTimer::RelayTimer(uint8_t pin, int addr)
@@ -174,46 +150,52 @@ RelayTimer::RelayTimer(uint8_t pin, int addr)
 	_current = RELAY_OFF;
 	_previous = RELAY_OFF;
 	_name = "";
-#ifdef DEBUG_ENABLED
-	DBG_OUTPUT_PORT.printf("\nNew relay init on pin: %d\n With address: %d", this->pin_num, this->_addr);
-#endif
+	//#ifdef DEBUG_ENABLED
+	//	DBG_OUTPUT_PORT.printf("\nNew relay init on pin: %d\n With address: %d", this->pin_num, this->_addr);
+	//#endif
 }
 
-void RelayTimer::_on(){
+void RelayTimer::on(){
 	if (enabled()) {
 		//digitalWrite(this->pin_num, LOW);
-		if (set_state(RELAY_ON)) writeConfig();
+		if (set_state(RELAY_ON)) {
+
+			writeConfig();
+		}
 #ifdef DEBUG_ENABLED
-		DBG_OUTPUT_PORT.printf("\nGot: %d - try to set ON for relay %s \n", this->state(), this->name().c_str());
+		DBG_OUTPUT_PORT.printf("\nTry to switch ON relay %s with state %d \n", this->name().c_str(), this->state());
 #endif
-		
-	}	
-}
 
-void RelayTimer::on(void(*fn)() = on_callback){
-	if (enabled()) {
-		_on();
-		fn();
 	}
 }
 
-void RelayTimer::off(void(*fn)() = off_callback){
+void RelayTimer::on(on_callback fn){
 	if (enabled()) {
-		_off();
-		fn();
+		on();
+		if (fn != nullptr) fn();
 	}
 }
 
-void RelayTimer::_off(){
+void RelayTimer::off(off_callback fn){
+	if (enabled()) {
+		off();
+		if (fn != nullptr) fn();
+	}
+}
+
+void RelayTimer::off(){
 
 	if (enabled()){
 		//digitalWrite(this->pin_num, HIGH);
-		if (set_state(RELAY_OFF))writeConfig();
+		if (set_state(RELAY_OFF)){
+			off_callback();
+			writeConfig();
+		}
 #ifdef DEBUG_ENABLED
-		DBG_OUTPUT_PORT.printf("\nGot: %d - try to set OFF state for relay %s \n", this->state(), this->name().c_str());
+		DBG_OUTPUT_PORT.printf("\nTry to switch OFF relay %s with state %d \n", this->name().c_str(), this->state());
 #endif
-		
-	}	
+
+	}
 }
 
 bool RelayTimer::enabled(){
@@ -222,7 +204,7 @@ bool RelayTimer::enabled(){
 }
 
 RelayState RelayTimer::state(){
-	
+
 	return _current;
 }
 
@@ -231,7 +213,7 @@ void RelayTimer::enable(){
 #ifdef DEBUG_ENABLED
 	DBG_OUTPUT_PORT.printf("\nGot: %d - try to ENABLE relay %s \n", this->state(), this->name().c_str());
 #endif
-	
+
 	//digitalWrite(this->pin_num, HIGH);
 }
 
@@ -240,7 +222,7 @@ void RelayTimer::disable(){
 #ifdef DEBUG_ENABLED
 	DBG_OUTPUT_PORT.printf("\nGot: %d - try to DISABLE relay %s \n", this->state(), this->name().c_str());
 #endif
-	
+
 	//digitalWrite(this->pin_num, HIGH);
 }
 
@@ -261,7 +243,7 @@ void RelayTimer::begin()
 #endif
 
 	readConfig();
-	
+	_changed = false;
 }
 
 void RelayTimer::rename(const char* new_name)
@@ -270,24 +252,26 @@ void RelayTimer::rename(const char* new_name)
 }
 
 bool RelayTimer::set_state(RelayState rs){
+	_previous = _current;
 	if (_current != rs){
-		_previous = _current;
+		//_previous = _current;
 		_current = rs;
 		switch (this->state()){
-			case RELAY_DISABLED: {digitalWrite(this->pin_num, HIGH); break; }
-			case RELAY_ON: {digitalWrite(this->pin_num, LOW); break; }
-			case RELAY_OFF: {digitalWrite(this->pin_num, HIGH); break; }
+		case RELAY_DISABLED: {digitalWrite(this->pin_num, HIGH); break; }
+		case RELAY_ON: {digitalWrite(this->pin_num, LOW); break; }
+		case RELAY_OFF: {digitalWrite(this->pin_num, HIGH); break; }
 		}
 #ifdef DEBUG_ENABLED
-		DBG_OUTPUT_PORT.printf("State changed for relay %s, current is: %d\n", _name.c_str(), _current);
+		DBG_OUTPUT_PORT.printf("Try to change state for relay %s, current is: %d\n", name().c_str(), state());
 #endif
 		return true;
 	}
-#ifdef DEBUG_ENABLED
+
 	else{
-		DBG_OUTPUT_PORT.printf("State unchanged for relay %s, current is: %d\n", _name.c_str(), _current);
+		//_previous = _current;
+
 	}
-#endif
+
 	return false;
 }
 
@@ -298,17 +282,104 @@ const String RelayTimer::name()
 
 void RelayTimer::process()
 {
-	if (millis() % 3000 == 0) {
-		DBG_OUTPUT_PORT.printf("Current state in process: %d for relay %s \n", this->state(), this->name().c_str());
+	/*if (millis() - prevMillis >= 1000) {*/
+		//DBG_OUTPUT_PORT.println("Current time: " + convertTime(now() + TIME_ZONE * SECS_PER_HOUR) + " start: " + convertTime(get_start()) + " end: " + convertTime(get_end()) + " " + name());
+		if (is_changed()){
+			writeConfig();
+			_changed = false;
+//#ifdef DEBUG_ENABLED
+//			DBG_OUTPUT_PORT.println("Timer has been changed. Start: " + convertTime(get_start()) + " end:  " + convertTime(get_end()) + " " + name());
+//#endif
+		}
+		
+	//}
+		
+		//
+		if (state() == RELAY_OFF){
 
-		if (this->state() != RELAY_ON){
-			if (_start <= now() && _end >= now()) { }
+			if (tm_start.Hour >= (hour() + TIME_ZONE)){
+				if (tm_start.Minute >= minute()){
+					on();
+					lock();
+#ifdef DEBUG_ENABLED
+					DBG_OUTPUT_PORT.printf("\nTimer in progress %d for relay %s \n", state(), name().c_str());
+#endif
+				}
+			}
+		}
 
+		//
+		if (state() == RELAY_ON && locked()){
+			if (tm_end.Hour <= (hour() + TIME_ZONE) && tm_end.Minute <= minute()) {
+				off();
+				unlock();
+#ifdef DEBUG_ENABLED
+				DBG_OUTPUT_PORT.printf("\nTimer is sleeping. Relay %s was set to OFF", name().c_str());
+#endif
+			}
 		}
 		//else off();
-	}
-	if (millis() % 3000 == 0) {
-		DBG_OUTPUT_PORT.printf("Current state process after: %d for relay %s \n", this->state(), this->name().c_str());
-	}
+	
+	prevMillis = millis();
 	return; // Attention!!! Achtung!!! Don't comment or disable!!!
 }
+
+
+bool RelayTimer::state_changed()
+{
+#ifdef DEBUG_ENABLED
+	if (_previous != _current) DBG_OUTPUT_PORT.printf("State was changed for relay %s, current is: %d\n", name().c_str(), state());
+#endif
+	return _previous != _current;
+}
+
+
+void RelayTimer::lock()
+{
+	_locked = true;
+}
+
+
+void RelayTimer::unlock()
+{
+	_locked = false;
+}
+
+
+bool RelayTimer::locked()
+{
+	return _locked;
+}
+
+//void RelayTimer::set_start(time_t st)
+//{
+//	Timer::set_start(st);
+//	if (is_changed()) writeConfig();
+//}
+//
+//void RelayTimer::set_end(time_t en)
+//{
+//	Timer::set_end(en);
+//	if (is_changed()) writeConfig();
+//}
+//
+//bool RelayTimer::set(uint8_t _hour, uint8_t _min, uint8_t _sec, uint32_t _long)
+//{
+//	Timer::set(_hour, _min, _sec, _long);
+//	if (is_changed()) writeConfig();
+//	return this->_changed;
+//}
+//
+//bool RelayTimer::set(uint8_t h1, uint8_t m1, uint8_t s1, uint8_t h2, uint8_t m2, uint8_t s2)
+//{
+//	Timer::set(h1, m1, s1, h1, m2, s2);
+//	if (is_changed()) writeConfig();
+//	return this->_changed;
+//}
+//
+//bool RelayTimer::set(time_t start, time_t end)
+//{
+//	Timer::set(start, end);
+//	if (is_changed()) writeConfig();
+//	return this->_changed;
+//}
