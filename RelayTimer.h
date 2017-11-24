@@ -1,4 +1,5 @@
 #include <inttypes.h>
+#include <functional>
 //#include <avr/pgmspace.h>
 #ifdef __cplusplus
 #include <Arduino.h>
@@ -48,13 +49,7 @@ public:
 	const String name();
 	void process();
 	bool locked();
-	/*bool set(uint8_t _hour, uint8_t _min, uint8_t _sec, uint32_t _long);
-	bool set(uint8_t h1, uint8_t m1, uint8_t s1, uint8_t h2, uint8_t m2, uint8_t s2);
-	bool set(time_t start, time_t end);
-	void set_start(time_t);
-	void set_end(time_t);*/
-
-
+	
 protected:
 	bool set_state(RelayState rs);
 	String _name;

@@ -38,7 +38,7 @@
             display: inline-block;
             position: relative;
             z-index: 2;
-            font-weight: 700;
+            font-weight: normal;
             padding: 10px;
             border-radius: 2px;
             box-shadow: 0 0px 0 2px #454545;
@@ -55,37 +55,47 @@
 			/* text-align: center; */
 		}
 		ul li {
-			display: inline;
-			font-size: 4em;
-			text-align: right; 
-			text-shadow: 0 0 10px #1977cc;
+			display: inline;									
+		}
+		
+		.small-data{
+			font-size: 1em;
+			text-shadow: 0 0 15px #1977cc;
+			
+		}
+		
+		.big-data{
+			font-size: 4em;	
+			text-shadow: 0 0 15px #1977cc;
 		}
 		#date,
 		#clock,
-		#temper{
-			/* text-align: center; */
-			text-shadow: 0 0 15px #1977cc;
-			padding: 30px 10px;
+		#temper,
+		#humidity,
+		#pressure		
+		{
+			padding: 30px 20px;
 		}
 		
 		#point {
 			position: relative;
 			-moz-animation: mymove 1s ease infinite;
 			-webkit-animation: mymove 1s ease infinite;
-			padding-left: 10px;
-			padding-right: 10px;			
+			/* padding-left: 10px; */
+			/* padding-right: 10px;	 */
+			text-shadow: 0 0 15px #1977cc;			
 		}
 		#clock {			
-			text-align: right;
-			
+			text-align: right;			
 		}
 		#date{
-			padding: 0;
-			font-size: 1em;			
+			padding: 0;				
 		}
-		#temper{
+		#temper, 
+		#humidity,
+		#pressure{
 			float: left;
-			font-size: 4em;			
+			text-align: center;
 		}
 		.status{
 			content: "";
@@ -129,7 +139,7 @@
             background-color: #cf324f;
             -webkit-transition: .4s;
             transition: .4s;
-            box-shadow: 0 0px 0 2px #454545;
+            box-shadow: 0 0px 0 2px #454545, inset 0 0px 5px #000;
         }
         .slider:before {
             position: absolute;

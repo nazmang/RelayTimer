@@ -16,7 +16,7 @@
 #define RELAY2_PIN 13
 #define RELAY3_PIN 14
 #define RELAY4_PIN 16
-#define RELAY1_ADDRESS 0
+#define RELAY1_ADDRESS 50
 #define RELAY2_ADDRESS sizeof(RelayConfig) + RELAY1_ADDRESS
 #define RELAY3_ADDRESS sizeof(RelayConfig) + RELAY2_ADDRESS
 #define RELAY4_ADDRESS sizeof(RelayConfig) + RELAY3_ADDRESS
@@ -106,7 +106,7 @@ time_t getNtpTime(){
 		}
 	}
 	Serial.println("No NTP Response :-(");
-	return 0; // return 0 if unable to get the time
+	return 0; // return 0 if unable to get the time	
 }
 
 #endif
@@ -172,7 +172,7 @@ String getContentType(String filename){
 }
 
 bool handleFileRead(String path){
-	DBG_OUTPUT_PORT.println("handleFileRead: " + path);
+	//DBG_OUTPUT_PORT.println("handleFileRead: " + path);
 	if (path.endsWith("/")) path += "index.html";
 	String contentType = getContentType(path);
 	String pathWithGz = path + ".gz";
@@ -276,31 +276,102 @@ void handleArgs(){
 	DBG_OUTPUT_PORT.println();
 #endif
 	if (server.args() > 0){
-		if (server.hasArg("st1")){ r1.on(); }
-		else { r1.off(); }
-		if (server.hasArg("st2")){ r2.on(); }
-		else { r2.off(); }
-		if (server.hasArg("st3")){ r3.on(); }
-		else { r3.off(); }
-		if (server.hasArg("st4")){ r4.on(); }
-		else { r4.off(); }
-		if (server.hasArg("start1")){ r1.set_start(convertTime(server.arg("start1").c_str())); }
-		if (server.hasArg("start2")){ r2.set_start(convertTime(server.arg("start2").c_str())); }
-		if (server.hasArg("start3")){ r3.set_start(convertTime(server.arg("start3").c_str())); }
-		if (server.hasArg("start4")){ r4.set_start(convertTime(server.arg("start4").c_str())); }
-		if (server.hasArg("end1")){ r1.set_end(convertTime(server.arg("end1").c_str())); }
-		if (server.hasArg("end2")){ r2.set_end(convertTime(server.arg("end2").c_str())); }
-		if (server.hasArg("end3")){ r2.set_end(convertTime(server.arg("end3").c_str())); }
-		if (server.hasArg("end4")){ r2.set_end(convertTime(server.arg("end4").c_str())); }
+		if (server.hasArg("st1")){ 
+			if (server.arg("st1").equals("on")){
+				r1.on();
+			}
+			else { r1.off(); }
+		}
+		
+		if (server.hasArg("st2")){ 
+			if (server.arg("st2").equals("on")){
+				r2.on();
+			}
+			else { r2.off(); }
+		}
+		
+		if (server.hasArg("st3")){
+			if (server.arg("st3").equals("on")){
+				r3.on();
+			}
+			else { r3.off(); }
+		}
+		
+		if (server.hasArg("st4")){
+			if (server.arg("st4").equals("on")){
+				r4.on();
+			}
+			else { r4.off(); }
+		}
+		///
+		if (server.hasArg("sst1")){
+			if (server.arg("sst1").equals("on")){
+				r1.enable();
+			}
+			else { r1.disable(); }
+		}
+
+		if (server.hasArg("sst2")){
+			if (server.arg("sst2").equals("on")){
+				r2.enable();
+			}
+			else { r2.disable(); }
+		}
+
+		if (server.hasArg("sst3")){
+			if (server.arg("sst3").equals("on")){
+				r3.enable();
+			}
+			else { r3.disable(); }
+		}
+
+		if (server.hasArg("sst4")){
+			if (server.arg("sst4").equals("on")){
+				r4.enable();
+			}
+			else { r4.disable(); }
+		}
+
+		if (server.hasArg("start1")){ r1.set_start(server.arg("start1").toInt()); }
+		if (server.hasArg("start2")){ r2.set_start(server.arg("start2").toInt()); }
+		if (server.hasArg("start3")){ r3.set_start(server.arg("start3").toInt()); }
+		if (server.hasArg("start4")){ r4.set_start(server.arg("start4").toInt()); }
+		if (server.hasArg("end1")){	r1.set_end(server.arg("end1").toInt());	}
+		if (server.hasArg("end2")){	r2.set_end(server.arg("end2").toInt()); }
+		if (server.hasArg("end3")){ r3.set_end(server.arg("end3").toInt()); }
+		if (server.hasArg("end4")){ r4.set_end(server.arg("end4").toInt()); }
+		if (server.hasArg("name1")){ r1.rename(server.arg("name1")); }
+		if (server.hasArg("name2")){ r2.rename(server.arg("name2")); }
+		if (server.hasArg("name3")){ r3.rename(server.arg("name3")); }
+		if (server.hasArg("name4")){ r4.rename(server.arg("name4")); }
 
 		
-		//writeConfig(r1, RELAY1_ADDRESS);
-		//writeConfig(r2, RELAY2_ADDRESS);
-		//writeConfig(r3, RELAY3_ADDRESS);
-		//writeConfig(r4, RELAY4_ADDRESS);
 	}
 
 }
+
+//bool deserialize(RelayConfig& data, char* json)
+//{
+//	StaticJsonBuffer<sizeof(RelayConfig)> jsonBuffer;
+//	JsonObject& root = jsonBuffer.parseObject(json);
+//	const char *str PROGMEM = root["name"].as<const char*>();
+//	strncpy_P(data.name, str,sizeof(data.name) - 1);
+//	data.start1 = root["start"];
+//	data.end1 = root["end"];
+//	data.state = root["state"];
+//	return root.success();
+//}
+//
+//void serialize(const RelayConfig& data, char* json, size_t maxSize)
+//{
+//	StaticJsonBuffer<sizeof(RelayConfig)> jsonBuffer;
+//	JsonObject& root = jsonBuffer.createObject();
+//	root["name"] = data.name;
+//	root["start"] = data.start1;
+//	root["end"] = data.end1;
+//	root["state"] = data.state;
+//	root.printTo(json, maxSize);
+//}
 
 
 String JSONGenerate(){
@@ -319,32 +390,42 @@ String JSONGenerate(){
 
 	JsonObject& relay1 = root.createNestedObject("relay1");
 	relay1["st1"] = String(r1.state());
-	relay1["start1"] = convertTime(r1.get_start());
-	relay1["end1"] = convertTime(r1.get_end());
+	relay1["start1"] = r1.get_start();
+	relay1["end1"] = r1.get_end();
 	relay1["name1"] = r1.name();
+	relay1["locked"] = r1.locked();
 
 	JsonObject& relay2 = root.createNestedObject("relay2");
 	relay2["st2"] = String(r2.state());
-	relay2["start2"] = convertTime(r2.get_start());
-	relay2["end2"] = convertTime(r2.get_end());
+	relay2["start2"] = r2.get_start();
+	relay2["end2"] = r2.get_end();
 	relay2["name2"] = r2.name();
+	relay2["locked"] = r1.locked();
 
 	JsonObject& relay3 = root.createNestedObject("relay3");
 	relay3["st3"] = String(r3.state());
-	relay3["start3"] = convertTime(r3.get_start());
-	relay3["end3"] = convertTime(r3.get_end());
+	relay3["start3"] = r3.get_start();
+	relay3["end3"] = r3.get_end();
 	relay3["name3"] = r3.name();
+	relay3["locked"] = r1.locked();
 
 	JsonObject& relay4 = root.createNestedObject("relay4");
 	relay4["st4"] = String(r4.state());
-	relay4["start4"] = convertTime(r4.get_start());
-	relay4["end4"] = convertTime(r4.get_end());
+	relay4["start4"] = r4.get_start();
+	relay4["end4"] = r4.get_end();
 	relay4["name4"] = r4.name();
+	relay4["locked"] = r1.locked();
 
+	JsonObject& network = root.createNestedObject("network");
+	network["ip4"] = WiFi.localIP().toString();
+	network["connected"] = WiFi.isConnected();
+
+	//JsonObject& wifi = root.createNestedObject("wifi");
+	
 	root["time"] = String(now());
 	/*root["frequency"] = ESP.getCpuFreqMHz();*/
-	/*root["temperature"] = dht.readTemperature(false);
-	root["humidity"] = dht.readHumidity();*/
+	root["temperature"] = dht.readTemperature(false);
+	root["humidity"] = dht.readHumidity();
 	String json = String();
 	
 	root.printTo(json);
@@ -355,7 +436,7 @@ String JSONGenerate(){
 void setup(void){
 #ifdef DEBUG_ENABLED
 	DBG_OUTPUT_PORT.begin(115200);
-	DBG_OUTPUT_PORT.print("\n");
+	//DBG_OUTPUT_PORT.print("\n");
 	DBG_OUTPUT_PORT.setDebugOutput(true);
 #endif
 	// FS init
@@ -365,9 +446,9 @@ void setup(void){
 		while (dir.next()) {
 			String fileName = dir.fileName();
 			size_t fileSize = dir.fileSize();
-#ifdef DEBUG_ENABLED
-			DBG_OUTPUT_PORT.printf("FS File: %s, size: %s\n", fileName.c_str(), formatBytes(fileSize).c_str());
-#endif
+//#ifdef DEBUG_ENABLED
+//			DBG_OUTPUT_PORT.printf("FS File: %s, size: %s\n", fileName.c_str(), formatBytes(fileSize).c_str());
+//#endif
 		}
 
 	}
@@ -383,7 +464,7 @@ void setup(void){
 		DBG_OUTPUT_PORT.print(".");
 
 	}
-	DBG_OUTPUT_PORT.println("");
+	//DBG_OUTPUT_PORT.println("");
 	DBG_OUTPUT_PORT.print("Connected! IP address: ");
 	DBG_OUTPUT_PORT.println(WiFi.localIP());
 #endif
@@ -403,6 +484,7 @@ void setup(void){
 	if (timeStatus() == timeNotSet) {
 #ifdef DEBUG_ENABLED
 		DBG_OUTPUT_PORT.println("Time is not set!"); now();
+		return;
 	}
 	DBG_OUTPUT_PORT.print("Current timestamp: ");
 	DBG_OUTPUT_PORT.println(now());
@@ -412,11 +494,22 @@ void setup(void){
 	r2.begin();
 	r3.begin();
 	r4.begin();
+
+	r1.enable();
+	r2.enable();
+	r3.enable();
+	r4.enable();
+
+	/*r1.disable();
+	r2.disable();
+	r3.disable();
+	r4.disable();*/
+
 	//
-	r1.rename("Relay 1");
+	/*r1.rename("Relay 1");
 	r2.rename("Relay 2");
 	r3.rename("Relay 3");
-	r4.rename("Relay 4");
+	r4.rename("Relay 4");*/
 
 
 	//SERVER INIT	//list directory
@@ -454,17 +547,28 @@ void setup(void){
 	});
 	server.begin();
 	DBG_OUTPUT_PORT.println("HTTP server started");
+
+	r1.set_start(1491883966);
 }
 
+
 void loop(void){
+	/*if (millis() % 1000 == 0){
+		DBG_OUTPUT_PORT.printf("\nNow time is: %d:%d" , hour(),minute());
+	}*/
 	
 	r1.process();
 	
 	r2.process();
 	
 	server.handleClient();
-	
-	
+
 	/*r3.process();
 	r4.process();*/
+
+	
+
 }
+
+
+

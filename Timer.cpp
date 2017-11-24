@@ -4,15 +4,16 @@
 time_t convertTime(char const *str){
 	TimeElements tm;
 	String s(str);
-	time_t t;
-	t = now();
-	breakTime(t, tm);
+	
+	
+	breakTime(now(), tm);
 	tm.Hour = s.substring(0, 2).toInt();
 	tm.Minute = s.substring(3, 5).toInt();
-	tm.Second = 0;
-	t = makeTime(tm);
+	/*Serial.printf("\nGot string: %s", str);
+	Serial.printf("\nNow: %d Hour: %d Minute: %d", t, tm.Hour, tm.Minute);*/
+	
 
-	return makeTime(tm);
+	return  makeTime(tm);
 }
 
 String convertTime(const time_t t){
@@ -30,11 +31,7 @@ String convertTime(const time_t t){
 	return s;
 }
 
-time_t actualTime(){
-	
-}
-
-Timer::Timer() /*:_start(0), _end(0)*/
+Timer::Timer() :_start(0), _end(0)
 {
 	breakTime(0, tm_start);
 	breakTime(0, tm_end);
@@ -54,15 +51,15 @@ bool Timer::set_start(time_t st)
 {
 	TimeElements tm;
 	breakTime(st, tm);
-	if (tm.Hour >= tm_end.Hour){
-		if (tm.Minute >= tm_end.Minute){
-			_changed = false;
-			return false;
-		}
-	}
-	if (tm_start.Hour != tm.Hour || tm_start.Minute != tm.Minute || tm_start.Second != tm.Second)
+	/*tm.Year = year();
+	tm.Month = month();
+	tm.Day = day();*/
+
+	//if (tm_start.Hour != tm.Hour || tm_start.Minute != tm.Minute)
+	if (st != _start)
 	{
-		breakTime(st, tm_start);
+		_start = makeTime(tm);
+		breakTime(_start, tm_start);
 		return _changed = true;
 	}
 	return false;
@@ -72,15 +69,15 @@ bool Timer::set_end(time_t en)
 {
 	TimeElements tm;
 	breakTime(en, tm);
-	if (tm.Hour <= tm_start.Hour){
-		if (tm.Minute <= tm_start.Minute){
-			_changed = false;
-			return false;
-		}
-	}
-	if (tm_end.Hour != tm.Hour || tm_end.Minute != tm.Minute || tm_end.Second != tm.Second)
+	/*tm.Year = year();
+	tm.Month = month();
+	tm.Day = day();*/
+
+	//if (tm_end.Hour != tm.Hour || tm_end.Minute != tm.Minute)
+	if (en != _end)
 	{
-		breakTime(en, tm_end);
+		_end = makeTime(tm);
+		breakTime(_end, tm_end);
 		return _changed = true;
 	}
 	return false;
@@ -137,11 +134,28 @@ bool Timer::is_set()
 
 bool Timer::is_changed()
 {
-	if (this->is_set()) return _changed;
+	if (is_set()) return _changed;
 	return false;
 }
 
+void Timer::sync()
+{
+	breakTime(_start, tm_start);
+	breakTime(_end, tm_end);
+	tm_start.Year = CalendarYrToTm(year());
+	tm_start.Month = month();
+	tm_start.Day = day();
+	tm_end.Year = CalendarYrToTm(year());
+	tm_end.Month = month();
+	tm_end.Day = day();
 
+	Serial.printf("\nStart: %d / %d / %d %d:%d:%d", tmYearToCalendar(tm_start.Year), tm_start.Month, tm_start.Day, tm_start.Hour, tm_start.Minute, tm_start.Second);
+	Serial.printf("\nStart: %d / %d / %d %d:%d:%d", tmYearToCalendar(tm_end.Year), tm_end.Month, tm_end.Day, tm_end.Hour, tm_end.Minute, tm_end.Second);
+
+	set_start(makeTime(tm_start));
+	set_end(makeTime(tm_end));
+	//_synced = true;
+}
 
 //bool Timer::operator>=(const time_t& rhs) const{
 //	TimeElements tm_min, tm_max;
@@ -181,3 +195,16 @@ bool Timer::is_changed()
 //	breakTime(rhs, tm);
 //	return !(*this == tm);
 //}
+
+
+
+
+bool Timer::is_synced()
+{
+	if (is_set()){
+		return tm_start.Day == day() && tm_end.Day == day() && 
+			tm_start.Month == month() && tm_end.Month == month() &&
+			tm_start.Year == CalendarYrToTm(year()) && tm_end.Year == CalendarYrToTm(year());
+	}
+	return false;
+}

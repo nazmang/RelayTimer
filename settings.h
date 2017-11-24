@@ -12,7 +12,7 @@
 #endif
 
 // NTP Servers:
-#define NTP_IP_ADDRESS 193,34,155,3 //pool.ntp.org
+#define NTP_IP_ADDRESS 193,106,144,6 //pool.ntp.org
 
 #define TIME_ZONE 3
 
