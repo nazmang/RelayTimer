@@ -13,6 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C2D3881F-6E0B-46B1-A435-246A51092731}</ProjectGuid>
     <RootNamespace>wifi</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -44,9 +45,9 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\Users\developer\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src;$(ProjectDir)..\..\..\Users\developer\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WebServer\src;$(ProjectDir)..\..\..\Users\developer\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266mDNS;$(ProjectDir)..\..\..\Users\developer\Documents\Arduino\libraries\Time;$(ProjectDir)..\..\..\Program Files (x86)\Arduino\libraries;$(ProjectDir)..\..\..\Users\developer\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries;$(ProjectDir)..\..\..\Users\developer\Documents\Arduino\libraries;$(ProjectDir)..\..\..\Users\developer\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266;$(ProjectDir)..\..\..\Users\developer\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\libb64;$(ProjectDir)..\..\..\Users\developer\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\spiffs;$(ProjectDir)..\..\..\Users\developer\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\umm_malloc;$(ProjectDir)..\..\..\Users\developer\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\variants\generic;$(ProjectDir)..\wifi;$(ProjectDir)..\..\..\Users\developer\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\tools\sdk\include;$(ProjectDir)..\..\..\Users\developer\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\tools\sdk\lwip\include;$(ProjectDir)..\..\..\Users\developer\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2;$(ProjectDir)..\..\..\Users\developer\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2\xtensa-lx106-elf;$(ProjectDir)..\..\..\Users\developer\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include;$(ProjectDir)..\..\..\Users\developer\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\lib\gcc\xtensa-lx106-elf\4.8.2\include;$(ProjectDir)..\..\..\Users\developer\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\tools\sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>D:\projects\Arduino\wifi\__vm\.wifi.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <PreprocessorDefinitions>__ESP8266_ESp8266__;__ESP8266_ESP8266__;__ets__;ICACHE_FLASH;F_CPU=80000000L;LWIP_OPEN_SRC;DEBUG_ESP_PORT=Serial;DEBUG_ESP_CORE;DEBUG_ESP_SSL;DEBUG_ESP_WIFI;DEBUG_ESP_HTTP_CLIENT;DEBUG_ESP_HTTP_UPDATE;DEBUG_ESP_HTTP_SERVER;DEBUG_ESP_UPDATER;DEBUG_ESP_OTA;DEBUG_TLS_MEM;ARDUINO=106011;ARDUINO_ESP8266_ESP01;ARDUINO_ARCH_ESP8266;ESP8266;__cplusplus=201103L;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\Program Files (x86)\Arduino\libraries\Ethernet\src;$(ProjectDir)..\..\Program Files (x86)\Arduino\libraries\Ethernet\src\utility;$(ProjectDir)..\..\Program Files (x86)\Arduino\libraries\WiFi\src;$(ProjectDir)..\..\Program Files (x86)\Arduino\libraries\WiFi\src\utility;$(ProjectDir)..\..\Program Files (x86)\Arduino\hardware\arduino\avr\libraries\Wire\src;$(ProjectDir)..\..\Program Files (x86)\Arduino\hardware\arduino\avr\libraries\Wire\src\utility;$(ProjectDir)..\..\Program Files (x86)\Arduino\libraries;$(ProjectDir)..\..\Program Files (x86)\Arduino\hardware\arduino\avr\libraries;$(ProjectDir)..\..\Arduino\library\libraries;$(ProjectDir)..\..\Program Files (x86)\Arduino\hardware\arduino\avr\cores\arduino;$(ProjectDir)..\..\Program Files (x86)\Arduino\hardware\arduino\avr\variants\yun;$(ProjectDir)..\RelayTimer;$(ProjectDir)..\..\Program Files (x86)\Arduino\hardware\tools\avr\avr\include\;$(ProjectDir)..\..\Program Files (x86)\Arduino\hardware\tools\avr\avr\include\avr\;$(ProjectDir)..\..\Program Files (x86)\Arduino\hardware\tools\avr\lib\gcc\avr\4.9.2\include;$(ProjectDir)..\..\Program Files (x86)\Arduino\hardware\tools\avr\lib\gcc\avr\4.9.2\include;$(ProjectDir)..\..\Program Files (x86)\Arduino\hardware\tools\avr\lib\gcc\avr\4.9.3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>$(ProjectDir)__vm\.RelayTimer.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <PreprocessorDefinitions>__AVR_ATmega32u4__;__AVR_ATmega32U4__;F_CPU=16000000L;ARDUINO=106013;ARDUINO_AVR_YUN;ARDUINO_ARCH_AVR;USB_VID=0x2341;USB_PID=0x8041;__cplusplus=201103L;_VMICRO_INTELLISENSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -79,6 +80,7 @@
     <ClInclude Include="RelayTimer.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="__vm\.RelayTimer.vsarduino.h" />
     <ClInclude Include="__vm\.wifi.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
