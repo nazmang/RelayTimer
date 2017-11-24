@@ -9,10 +9,10 @@ public:
 	Timer();
 	
 protected:
-	/*time_t _start;
-	time_t _end;*/
+	time_t _start;
+	time_t _end;
 	TimeElements tm_start, tm_end;
-	
+	//bool _synced = false;
 	bool _changed = false;
 
 public:
@@ -36,6 +36,8 @@ public:
 	bool operator!=(const time_t& rhs) const;*/
 	bool is_set();
 	bool is_changed();
+	void sync();
+	bool is_synced();
 };
 
 time_t convertTime(char const *str);

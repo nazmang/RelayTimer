@@ -1,0 +1,9 @@
+// This is QuickBooks configuration File. It exists while users are connected
+// to a company file. Do not delete this file yourself. QuickBooks may not
+// operate correctly if you manually delete this file. 
+[NetConnect]
+ServerIp=fe80::51ad:d883:bd7b:dcab%11
+EngineName=QB_-PC_18
+ServerPort=10180
+FilePath=D:\projects\Arduino\wifi\Timer.cpp
+ServerMode=1

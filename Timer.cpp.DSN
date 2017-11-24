@@ -1,0 +1,12 @@
+// This is Database Source Name File for ODBC connection to a company file.
+// Do not delete this file yourself. ODBC connection may not
+// operate correctly IF you manually delete this file. 
+[ODBC]
+DRIVER=SQL Anywhere
+Compress=NO
+DisableMultiRowFetch=NO
+Debug=NO
+Integrated=NO
+AutoStop=NO
+CommLinks=TCPIP{HOST=fe80::51ad:d883:bd7b:dcab%11:10180
+ServerName=QB_-PC_21

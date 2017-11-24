@@ -16,16 +16,16 @@
     <script src='timedropper.min.js'></script>
 </head>
 
-<body>
+<body onload=''>
 <div id='wrapper'>
     <form>
 	<div id='header'>
-		<div id='temper'>24<span>&deg;C</span></div>
-		<div id='temper'></div>
-		<div id='temper'></div>
+		<div id='temper' class='small-data'>Temperature<span> &deg;C</span><div id='temper-data' class='big-data'></div><div id='temp'></div></div>
+		<div id='humidity' class='small-data'>Humidity<span> %</span><div id='humidity-data' class='big-data'></div><div id='humid'></div></div>
+		<div id='pressure' class='small-data'>Pressure<div id='pressure-data'></div class='big-data'></div>
 		<div id='clock'>
-		<div id='date'></div>
-		<div id='time'>
+		<div id='date' class='small-data'></div>
+		<div id='time' class='big-data'>
 			<ul>
 				<li id="hours"></li>
 				<li id="point">:</li>
@@ -37,39 +37,63 @@
         <div class='accordion'><div id='st1' class='status'></div><input type='text'  class='name' name='name1' value=''/></div>
         <div class='panel'>
             <div class='container'><strong class='uppercase'>Start</strong>
-                <input type='text'  class='alarm' name='start1' />
+                <input type='text'  class='alarm' id='start1' />
+				<input type='hidden' name='start1' />
             </div>
             <div class='container'><strong class='uppercase'>Stop</strong>
-                <input type='text'  class='alarm' name='end1' />
+                <input type='text'  class='alarm' id='end1' />
+				<input type='hidden' name='end1' />
             </div>
-            <div class='container'><strong class='uppercase'>Status</strong>
+            <div class='container'><strong class='uppercase'>on/off</strong>
                 <label class='switch' for='sw1'>
-                    <input type='checkbox' id='sw1' name='st1' />
-                    <div class='slider round'></div>
+                    <input type='checkbox' id='sw1' />
+					<div class='slider round'></div>
+					<input type='hidden' name='st1' />
                 </label>
+            </div>
+			<div class='container'><strong class='uppercase'>enable/disable</strong>
+                <!-- <label class='switch' for='ssw1' style='margin-left: 15px;'> -->
+                    <!-- <input type='checkbox' id='ssw1' /> -->
+                    <!-- <div class='slider round' ></div> -->
+					<!-- <input type='hidden' name='sst1' /> -->
+                <!-- </label> -->
             </div>
         </div>
         <div class='accordion'><div id='st2' class='status'></div><input type='text'  class='name' name='name2' value=''/></div>
         <div class='panel'>
             <div class='container'><strong class='uppercase'>Start</strong>
-                <input type='text'  class='alarm' name='start2' />
+                <input type='text'  class='alarm' id='start2' />
+				<input type='hidden' name='start2' />
             </div>
             <div class='container'><strong class='uppercase'>Stop</strong>
-                <input type='text'  class='alarm' name='end2' />
+                <input type='text'  class='alarm' id='end2'  />
+				<input type='hidden' name='end2' />
             </div>
-            <div class='container'><strong class='uppercase'>Status</strong>
+            <div class='container'><strong class='uppercase'>on/off</strong>
                 <label class='switch' for='sw2'>
-                    <input type='checkbox' id='sw2' name='st2' />
+                    <input type='checkbox' id='sw2' />					
                     <div class='slider round'></div>
+					<input type='hidden' name='st2' />
+                </label>
+            </div>
+			<div class='container'><strong class='uppercase'>enable/disable</strong>
+                <!-- <label class='switch' for='ssw2' style='margin-left: 15px;'> -->
+                    <!-- <input type='checkbox' id='ssw2' /> -->
+                    <!-- <div class='slider round' ></div> -->
+					<!-- <input type='hidden' name='sst2' /> -->
                 </label>
             </div>
         </div>
     </form>
 </div>
+	
+	
     <script>
-		var sendTimout = 1000;		
-		function updateClock (clock)
-		{
+		var sendTimout = 1000;	
+		var intervalId = null;		
+		
+		
+		function updateClock (clock){
 			var timezone = 0;
 			var currentTime = new Date (clock - timezone * 3600 * 1000);
 			var monthNames = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ]; 
@@ -87,6 +111,33 @@
 			$('#date').html(dayNames[currentTime.getDay()] + " " + currentTime.getDate() + ' ' + monthNames[currentTime.getMonth()] + ' ' + currentTime.getFullYear());
 		}
 		
+		function timeFromStr(str){
+			var d = new Date();
+			var year = d.getFullYear();
+			var month = d.getMonth();
+			var day = d.getDate();
+			var seconds = d.getSeconds();
+			var mseconds = d.getMilliseconds();
+			var parts = str.split(':');
+			
+			<!-- console.log(year); -->
+			<!-- console.log(month); -->
+			<!-- console.log(day); -->
+			<!-- console.log(parts[0]); -->
+			<!-- console.log(parts[1]); -->
+			<!-- console.log(seconds); -->
+			<!-- console.log(mseconds); -->
+			
+			return d = new Date(year,month,day,parts[0],parts[1],seconds,mseconds);		
+		}
+		
+		function timeToStr(time){
+			var d = new Date(time * 1000);
+			var Minutes = ( d.getMinutes() < 10 ? "0" : "" ) + d.getMinutes();
+			var Hours = ( d.getHours() < 10 ? "0" : "" ) + d.getHours();
+			return Hours + ':' + Minutes;	
+		}
+		
 		function sendValues(values) {
 			console.log(values);
 			$.ajax({
@@ -98,26 +149,51 @@
 					//$.each(data, function() {    // обрабатываем полученные данные
 						/* ... */
 						//console.log(data);
-						$('input[name=start1]').val(data.relay1.start1);
+						$('input[name=start1]').val(data.relay1.start1);		
+						$('#start1').val(timeToStr($('input[name=start1]').val()));
 						$('input[name=end1]').val(data.relay1.end1);
+						$('#end1').val(timeToStr($('input[name=end1]').val()));
 						$('input[name=name1]').val(data.relay1.name1);
 						if(data.relay1.st1 == '1') {
-							$('input[name=st1]').prop('checked', true);
+							$('#sw1').prop('checked', true);
+							$('#ssw1').prop('checked', true);
+							$('input[name=st1]').val('on');
 							$('#st1').removeClass('off').addClass('on');
-						} else { 
-							$('input[name=st1]').prop('checked', false);
+						} else if(data.relay1.st1 == '0'){ 
+							$('#sw1').prop('checked', false);
+							$('#ssw1').prop('checked', true);
+							$('input[name=st1]').val('off');
 							$('#st1').removeClass('on').addClass('off');
+						} else{
+							$('#ssw1').prop('checked', false);
 						}
 						$('input[name=start2]').val(data.relay2.start2);
+						$('#start2').val(timeToStr($('input[name=start2]').val()));
 						$('input[name=end2]').val(data.relay2.end2);
+						$('#end2').val(timeToStr($('input[name=end2]').val()));
 						$('input[name=name2]').val(data.relay2.name2);
 						if(data.relay2.st2 == '1') {
+							$('#sw2').prop('checked', true);
+							$('#ssw2').prop('checked', true);
 							$('input[name=st2]').prop('checked', true);
 							$('#st2').removeClass('off').addClass('on');
-						} else {
+						} else if(data.relay2.st2 == '0'){
+							$('#sw2').prop('checked', false);
+							$('#ssw2').prop('checked', true);
 							$('input[name=st2]').prop('checked', false);
 							$('#st2').removeClass('on').addClass('off');
+						} else{
+							$('#ssw2').prop('checked', false);
+							$('#sw2').attr("disabled", true).prop('checked', false);
+							$('input[name=st2]').attr("disabled", true);
 						}	
+						
+						$('#temper-data').html(parseInt(data.temperature) + '');
+						$('#humidity-data').html(parseInt(data.humidity) + '');
+						<!-- temp.add(data.temperature); -->
+						//humid.add(data.humidity);
+						//console.log(temp);
+						//console.log(humid);
 						updateClock(data.time * 1000);				
 					//});
 				} 
@@ -126,25 +202,42 @@
 		
 		$(document).ready(function(){              
 			sendValues();	
-			setInterval('sendValues()', 5000);
-			
+			intervalId = setInterval('sendValues()', 5000);	
+						
         }) 
 
 		$('.alarm').timeDropper({
             format: 'HH:mm',
-            setCurrentTime: false
+            setCurrentTime: true
 		});
         $('.accordion').click(function() {
             $(this).toggleClass('active');
             $(this).next().toggleClass('show');
         });
-        $('.switch > input').on('click', function() {
-			if($(this).prop('checked') == true) {$(this).val('on');}
-			else {$(this).val('off');}
-			setTimeout(sendValues($('form').serialize(),sendTimout);
+        $('.switch > input:checkbox').on('click', function() {
+			if($(this).prop('checked') == true) {$(this).siblings('input:hidden').val('on');}
+			else {$(this).siblings('input:hidden').val('off');}
+			sendValues($(this).siblings('input:hidden').serialize());
         });
 		$('.td-clock').on('mouseup',function(){
-			setTimeout(sendValues($('form').serialize(),sendTimout);
+			var st1 = parseInt(timeFromStr($('#start1').val()) / 1000);
+			var en1 = parseInt(timeFromStr($('#end1').val()) / 1000);
+			if(st1 >= en1) en1 += 60;
+			$('input[name=start1]').val(st1);			
+			$('input[name=end1]').val(en1);
+			
+			var st2 = parseInt(timeFromStr($('#start2').val()) / 1000);
+			var en2 = parseInt(timeFromStr($('#end2').val()) / 1000);
+			if(st2 >= en2) en1 += 60;
+			$('input[name=start2]').val(st2);
+			$('input[name=end2]').val(en2);
+			
+			sendValues($('form').serialize());
+		});
+		$('.name').change(function(){
+			clearInterval(intervalId);
+			sendValues($(this).serialize());
+			intervalId = setInterval('sendValues()', 5000);	
 		});
 		
     </script>
