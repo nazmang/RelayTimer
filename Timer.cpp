@@ -1,22 +1,21 @@
 #include "Timer.h"
 
 
-time_t convertTime(char const *str){
+/*time_t convertTime(char const *str){
 	TimeElements tm;
 	String s(str);
 	
 	
 	breakTime(now(), tm);
 	tm.Hour = s.substring(0, 2).toInt();
-	tm.Minute = s.substring(3, 5).toInt();
+	tm.Minute = s.substring(3, 5).toInt();*/
 	/*Serial.printf("\nGot string: %s", str);
 	Serial.printf("\nNow: %d Hour: %d Minute: %d", t, tm.Hour, tm.Minute);*/
-	
-
-	return  makeTime(tm);
+/*	return  makeTime(tm);
 }
+*/
 
-String convertTime(const time_t t){
+/*String convertTime(const time_t t){
 	TimeElements tm;
 	breakTime(t, tm);
 	String s = "";
@@ -30,7 +29,7 @@ String convertTime(const time_t t){
 
 	return s;
 }
-
+*/
 Timer::Timer() :_start(0), _end(0)
 {
 	breakTime(0, tm_start);
@@ -149,55 +148,13 @@ void Timer::sync()
 	tm_end.Month = month();
 	tm_end.Day = day();
 
-	Serial.printf("\nStart: %d / %d / %d %d:%d:%d", tmYearToCalendar(tm_start.Year), tm_start.Month, tm_start.Day, tm_start.Hour, tm_start.Minute, tm_start.Second);
-	Serial.printf("\nStart: %d / %d / %d %d:%d:%d", tmYearToCalendar(tm_end.Year), tm_end.Month, tm_end.Day, tm_end.Hour, tm_end.Minute, tm_end.Second);
+	//Serial.printf("\nStart: %d / %d / %d %d:%d:%d", tmYearToCalendar(tm_start.Year), tm_start.Month, tm_start.Day, tm_start.Hour, tm_start.Minute, tm_start.Second);
+	//Serial.printf("\nStart: %d / %d / %d %d:%d:%d", tmYearToCalendar(tm_end.Year), tm_end.Month, tm_end.Day, tm_end.Hour, tm_end.Minute, tm_end.Second);
 
 	set_start(makeTime(tm_start));
 	set_end(makeTime(tm_end));
 	//_synced = true;
 }
-
-//bool Timer::operator>=(const time_t& rhs) const{
-//	TimeElements tm_min, tm_max;
-//	breakTime(rhs, tm_min);
-//	breakTime(this->_end, tm_max);
-//
-//	return(tm_max.Hour > tm_min.Hour || tm_max.Minute > tm_min.Minute);	
-//}
-//
-//bool Timer::operator<=(const time_t& rhs) const{
-//	TimeElements tm_min, tm_max;
-//	breakTime(rhs, tm_max);
-//	breakTime(this->_start, tm_min);
-//	if (tm_max.Hour >= tm_min.Hour){
-//		if (tm_max.Minute >= tm_min.Minute) return true;
-//	}
-//	return false;
-//}
-
-
-//Timer& Timer::operator+=(uint32_t _long)
-//{
-//	_end = _start + _long;
-//	return *this;
-//}
-
-
-//bool Timer::operator==(const time_t& rhs) const{
-//	TimeElements tm_min, tm_max;
-//	breakTime(rhs, tm_min);
-//	breakTime(this->_start, tm_max);
-//	return(tm_max.Hour == tm_min.Hour && tm_max.Minute == tm_min.Minute && tm_max.Second == tm_min.Second);
-//}
-//
-//bool Timer::operator!=(const time_t& rhs) const{
-//	TimeElements tm;
-//	breakTime(rhs, tm);
-//	return !(*this == tm);
-//}
-
-
-
 
 bool Timer::is_synced()
 {
